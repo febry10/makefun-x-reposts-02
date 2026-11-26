@@ -48,7 +48,12 @@ if (posts.length < 1 || posts.length > 15) {
   fail(`POSTS.json names ${posts.length} posts, expected 1 to 15`);
 }
 for (const entry of posts) {
-  if (typeof entry !== "string" || !/^https:\/\/(www\.|mobile\.)?(x|twitter)\.com\//.test(entry)) {
+  // A post's address as X shows it: /<handle>/status/<id>, the id digits
+  // only; a query or fragment after it is read past.
+  if (
+    typeof entry !== "string" ||
+    !/^https:\/\/(www\.|mobile\.)?(x|twitter)\.com\/[A-Za-z0-9_]+\/status\/\d+([/?#].*)?$/.test(entry)
+  ) {
     fail(`not an X post address: ${String(entry)}`);
   }
 }
