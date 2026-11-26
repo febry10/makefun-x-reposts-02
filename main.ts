@@ -47,15 +47,21 @@ const posts = (parsed as { posts: unknown[] }).posts;
 if (posts.length < 1 || posts.length > 15) {
   fail(`POSTS.json names ${posts.length} posts, expected 1 to 15`);
 }
+const seen = new Set<string>();
 for (const entry of posts) {
   // A post's address as X shows it: /<handle>/status/<id>, the id digits
-  // only; a query or fragment after it is read past.
-  if (
-    typeof entry !== "string" ||
-    !/^https:\/\/(www\.|mobile\.)?(x|twitter)\.com\/[A-Za-z0-9_]+\/status\/\d+([/?#].*)?$/.test(entry)
-  ) {
+  // only; a query or fragment after it is read past. A post named twice is
+  // read once by the house, so reject a duplicate id here instead.
+  const match =
+    typeof entry === "string" &&
+    /^https:\/\/(?:www\.|mobile\.)?(?:x|twitter)\.com\/[A-Za-z0-9_]+\/status\/(\d+)(?:[/?#].*)?$/.exec(entry);
+  if (!match) {
     fail(`not an X post address: ${String(entry)}`);
   }
+  if (seen.has(match[1])) {
+    fail(`POSTS.json names post ${match[1]} twice`);
+  }
+  seen.add(match[1]);
 }
 
 mkdirSync(outDir, { recursive: true });
